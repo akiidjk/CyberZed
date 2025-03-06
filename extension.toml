@@ -1,10 +1,11 @@
 id = "cyberzed"
 name = "CyberZed"
-description = "An utility extension based on the concept of gchq.github.io."
+description = "An utility extension based on the concept of gchq.github.io"
 version = "0.1.0"
 schema_version = 1
 authors = ["akiidjk <akiidjk@proton.me>"]
 repository = "https://github.com/akiidjk/cyberzed"
+tags = ["utility", "encryption", "encoding"]
 
 [slash_commands.echo]
 description = "echoes the provided input"
