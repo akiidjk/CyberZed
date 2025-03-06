@@ -6,10 +6,38 @@ schema_version = 1
 authors = ["akiidjk <akiidjk@proton.me>"]
 repository = "https://github.com/akiidjk/cyberzed"
 
-[cyberzed.echo]
+[slash_commands.echo]
 description = "echoes the provided input"
 requires_argument = true
 
-[cyberzed.pick-one]
+[slash_commands.pick-one]
 description = "pick one of three options"
+requires_argument = true
+
+[slash_commands.base64]
+description = "Base64 encode/decode"
+requires_argument = true
+
+[slash_commands.hex]
+description = "Hex encode/decode"
+requires_argument = true
+
+[slash_commands.md5]
+description = "MD5 hash"
+requires_argument = true
+
+[slash_commands.sha]
+description = "SHA256,SHA512,SHA384 functions"
+requires_argument = true
+
+[slash_commands.url]
+description = "URL encode/decode"
+requires_argument = true
+
+[slash_commands.uuid]
+description = "UUIDv4 generator"
+requires_argument = true
+
+[slash_commands.xor]
+description = "XOR"
 requires_argument = true

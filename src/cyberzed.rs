@@ -1,6 +1,11 @@
+mod commands;
+mod utils;
+
+use commands::{encoding, hashing};
+use utils::{uuid_gen, xor};
+
 use zed_extension_api::{
-    self as zed, SlashCommand, SlashCommandArgumentCompletion, SlashCommandOutput,
-    SlashCommandOutputSection, Worktree,
+    self as zed, SlashCommand, SlashCommandArgumentCompletion, SlashCommandOutput, Worktree,
 };
 
 struct CyberZedExtension;
@@ -14,27 +19,23 @@ impl zed::Extension for CyberZedExtension {
         &self,
         command: SlashCommand,
         _args: Vec<String>,
-    ) -> Result<Vec<zed_extension_api::SlashCommandArgumentCompletion>, String> {
+    ) -> Result<Vec<zed::SlashCommandArgumentCompletion>, String> {
         match command.name.as_str() {
             "echo" => Ok(vec![]),
-            "pick-one" => Ok(vec![
-                SlashCommandArgumentCompletion {
-                    label: "Option One".to_string(),
-                    new_text: "option-1".to_string(),
-                    run_command: true,
-                },
-                SlashCommandArgumentCompletion {
-                    label: "Option Two".to_string(),
-                    new_text: "option-2".to_string(),
-                    run_command: true,
-                },
-                SlashCommandArgumentCompletion {
-                    label: "Option Three".to_string(),
-                    new_text: "option-3".to_string(),
-                    run_command: true,
-                },
-            ]),
-            command => Err(format!("unknown slash command: \"{command}\"")),
+            "base64" | "hex" | "url" => encoding::complete_encoding_commands(),
+            "sha" => hashing::complete_sha_commands(),
+            "md5" => hashing::complete_md5_commands(),
+            "uuid" => Ok(vec![SlashCommandArgumentCompletion {
+                label: "uuid".to_string(),
+                new_text: "uuid".to_string(),
+                run_command: true,
+            }]),
+            "xor" => Ok(vec![SlashCommandArgumentCompletion {
+                label: "xor".to_string(),
+                new_text: "xor".to_string(),
+                run_command: true,
+            }]),
+            _ => Err(format!("Unknown slash command: \"{}\"", command.name)),
         }
     }
 
@@ -45,44 +46,30 @@ impl zed::Extension for CyberZedExtension {
         _worktree: Option<&Worktree>,
     ) -> Result<SlashCommandOutput, String> {
         match command.name.as_str() {
-            "echo" => {
-                if args.is_empty() {
-                    return Err("nothing to echo".to_string());
-                }
-
-                let text = args.join(" ");
-
-                Ok(SlashCommandOutput {
-                    sections: vec![SlashCommandOutputSection {
-                        range: (0..text.len()).into(),
-                        label: "Echo".to_string(),
-                    }],
-                    text,
-                })
-            }
-            "pick-one" => {
-                let Some(selection) = args.first() else {
-                    return Err("no option selected".to_string());
-                };
-
-                match selection.as_str() {
-                    "option-1" | "option-2" | "option-3" => {}
-                    invalid_option => {
-                        return Err(format!("{invalid_option} is not a valid option"));
-                    }
-                }
-
-                let text = format!("You chose {selection}.");
-
-                Ok(SlashCommandOutput {
-                    sections: vec![SlashCommandOutputSection {
-                        range: (0..text.len()).into(),
-                        label: format!("Pick One: {selection}"),
-                    }],
-                    text,
-                })
-            }
-            command => Err(format!("unknown slash command: \"{command}\"")),
+            // "echo" => echo_command(&args),
+            "uuid" => uuid_gen::generate_uuid(),
+            "xor" => xor::xor_command(args),
+            "base64" => encoding::process_encoding_command(
+                "Base64",
+                &args,
+                encoding::encode_base64,
+                encoding::decode_base64,
+            ),
+            "hex" => encoding::process_encoding_command(
+                "Hex",
+                &args,
+                encoding::encode_hex,
+                encoding::decode_hex,
+            ),
+            "url" => encoding::process_encoding_command(
+                "URL",
+                &args,
+                encoding::encode_url,
+                encoding::decode_url,
+            ),
+            "sha" => hashing::process_sha_command(&args),
+            "md5" => hashing::process_md5_command(&args),
+            _ => Err(format!("Unknown slash command: \"{}\"", command.name)),
         }
     }
 }
